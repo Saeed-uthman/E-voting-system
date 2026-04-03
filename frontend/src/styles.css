@@ -1,0 +1,117 @@
+:root {
+  font-family: "Inter", "Segoe UI", sans-serif;
+  color: #1f2937;
+  background-color: #f5f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+a {
+  color: #0f4c81;
+  text-decoration: none;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar__brand {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.navbar__links {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+}
+
+.nav-link.active {
+  background: #e8f0fb;
+  color: #0a3a66;
+}
+
+.page-container {
+  width: min(1000px, 92%);
+  margin: 1.5rem auto 2rem;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+.form-row {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+input,
+button {
+  font: inherit;
+}
+
+input {
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  background: #0f4c81;
+  color: white;
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.helper-text {
+  color: #4b5563;
+  margin: 0.5rem 0 0;
+}
+
+.status-message {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  background: #eef6ff;
+  color: #1e3a5f;
+}
