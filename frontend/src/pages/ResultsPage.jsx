@@ -1,19 +1,25 @@
 import { useEffect, useState } from "react";
 
 import { getResults } from "../api/votingApi";
+import { extractErrorMessage } from "../utils/apiError";
 
 function ResultsPage() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [results, setResults] = useState([]);
-  const [status, setStatus] = useState("Loading results...");
 
   useEffect(() => {
     const fetchResults = async () => {
+      setLoading(true);
+      setError("");
+
       try {
         const response = await getResults();
         setResults(response.data?.data?.positions || []);
-        setStatus("");
-      } catch {
-        setStatus("Results are unavailable or require admin access.");
+      } catch (apiError) {
+        setError(extractErrorMessage(apiError, "Results are unavailable or require admin access."));
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -23,8 +29,11 @@ function ResultsPage() {
   return (
     <section className="card">
       <h2>Election Results</h2>
-      {status && <p className="status-message">{status}</p>}
-      {!status && (
+      {loading && <p className="status-message">Loading results...</p>}
+      {!loading && error && <p className="error-message">{error}</p>}
+      {!loading && !error && results.length === 0 && <p className="helper-text">No vote results available yet.</p>}
+
+      {!loading && !error && results.length > 0 && (
         <ul>
           {results.map((position) => (
             <li key={position.position_id}>

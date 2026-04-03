@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 
 import { castVote, getActiveElectionPositions, getCandidatesByPosition } from "../api/votingApi";
 import { useAuth } from "../context/AuthContext";
+import { extractErrorMessage } from "../utils/apiError";
 
 function VotingPage() {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ function VotingPage() {
         setElection(electionData || null);
         setPositions(withCandidates);
       } catch (apiError) {
-        setError(apiError.response?.data?.message || "Unable to load active voting data.");
+        setError(extractErrorMessage(apiError, "Unable to load active voting data."));
       } finally {
         setLoading(false);
       }
@@ -55,8 +56,13 @@ function VotingPage() {
 
   useEffect(() => {
     if (!storageKey) return;
-    const raw = localStorage.getItem(storageKey);
-    setVotedMap(raw ? JSON.parse(raw) : {});
+
+    try {
+      const raw = localStorage.getItem(storageKey);
+      setVotedMap(raw ? JSON.parse(raw) : {});
+    } catch {
+      setVotedMap({});
+    }
   }, [storageKey]);
 
   const markPositionAsVoted = (positionId) => {
@@ -89,9 +95,7 @@ function VotingPage() {
         },
       });
     } catch (apiError) {
-      const apiErrorMessage =
-        apiError.response?.data?.errors?.student?.[0] || apiError.response?.data?.detail || "Vote submission failed.";
-      setError(apiErrorMessage);
+      setError(extractErrorMessage(apiError, "Vote submission failed."));
     } finally {
       setSubmittingPosition(null);
     }
@@ -104,11 +108,16 @@ function VotingPage() {
   return (
     <section className="card">
       <h2>Voting Page</h2>
+
       {loading && <p className="status-message">Loading election data...</p>}
-      {!loading && election && <p className="helper-text">Active election: {election.name}</p>}
-      {error && <p className="error-message">{error}</p>}
+      {!loading && error && <p className="error-message">{error}</p>}
+      {!loading && !error && election && <p className="helper-text">Active election: {election.name}</p>}
+      {!loading && !error && positions.length === 0 && (
+        <p className="helper-text">No positions are available for voting right now.</p>
+      )}
 
       {!loading &&
+        !error &&
         positions.map((position) => {
           const hasVoted = Boolean(votedMap[position.id]);
 
@@ -117,30 +126,39 @@ function VotingPage() {
               <h3>{position.title}</h3>
               <p className="helper-text">Choose one candidate:</p>
 
-              <div className="candidate-list">
-                {position.candidates?.map((candidate) => (
-                  <label key={candidate.id} className="candidate-item">
-                    <input
-                      type="radio"
-                      name={`position-${position.id}`}
-                      value={candidate.id}
-                      disabled={hasVoted}
-                      checked={String(selections[position.id] || "") === String(candidate.id)}
-                      onChange={(event) =>
-                        setSelections((prev) => ({
-                          ...prev,
-                          [position.id]: event.target.value,
-                        }))
-                      }
-                    />
-                    <span>{candidate.full_name}</span>
-                  </label>
-                ))}
-              </div>
+              {position.candidates?.length ? (
+                <div className="candidate-list">
+                  {position.candidates.map((candidate) => (
+                    <label key={candidate.id} className="candidate-item">
+                      <input
+                        type="radio"
+                        name={`position-${position.id}`}
+                        value={candidate.id}
+                        disabled={hasVoted}
+                        checked={String(selections[position.id] || "") === String(candidate.id)}
+                        onChange={(event) =>
+                          setSelections((prev) => ({
+                            ...prev,
+                            [position.id]: event.target.value,
+                          }))
+                        }
+                      />
+                      <span>{candidate.full_name}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <p className="helper-text">No candidates available for this position.</p>
+              )}
 
               <button
                 type="button"
-                disabled={hasVoted || !selections[position.id] || submittingPosition === position.id}
+                disabled={
+                  hasVoted ||
+                  !selections[position.id] ||
+                  submittingPosition === position.id ||
+                  !position.candidates?.length
+                }
                 onClick={() => submitVote(position.id)}
               >
                 {hasVoted

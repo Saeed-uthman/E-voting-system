@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { loginStudent, verifyStudent } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
+import { extractErrorMessage } from "../utils/apiError";
 
 function StudentLoginPage() {
   const navigate = useNavigate();
@@ -17,10 +18,10 @@ function StudentLoginPage() {
     setStatus("");
     setError("");
     try {
-      await verifyStudent(form);
-      setStatus("Verification successful. You can now login.");
+      const response = await verifyStudent(form);
+      setStatus(response.data?.message || "Verification successful. You can now login.");
     } catch (apiError) {
-      setError(apiError.response?.data?.detail || "Student verification failed.");
+      setError(extractErrorMessage(apiError, "Student verification failed."));
     } finally {
       setSubmitting(false);
     }
@@ -34,10 +35,10 @@ function StudentLoginPage() {
       const response = await loginStudent(form);
       const payload = response.data?.data;
       setStudentAuth(payload || null);
-      setStatus("Student login successful.");
+      setStatus(response.data?.message || "Student login successful.");
       navigate("/student/vote");
     } catch (apiError) {
-      setError(apiError.response?.data?.detail || "Student login failed.");
+      setError(extractErrorMessage(apiError, "Student login failed."));
     } finally {
       setSubmitting(false);
     }

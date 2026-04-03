@@ -2,24 +2,27 @@ import { useState } from "react";
 
 import { adminLogin } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
+import { extractErrorMessage } from "../utils/apiError";
 
 function AdminLoginPage() {
   const { setAdminSession } = useAuth();
   const [form, setForm] = useState({ username: "", password: "" });
   const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSubmitting(true);
     setStatus("");
+    setError("");
 
     try {
       const response = await adminLogin(form);
       setAdminSession(response.data?.data?.tokens || {});
-      setStatus("Admin login successful.");
-    } catch (error) {
-      setStatus(error.response?.data?.detail || "Unable to login as admin.");
+      setStatus(response.data?.message || "Admin login successful.");
+    } catch (apiError) {
+      setError(extractErrorMessage(apiError, "Unable to login as admin."));
     } finally {
       setSubmitting(false);
     }
@@ -53,6 +56,7 @@ function AdminLoginPage() {
         </button>
       </form>
       {status && <p className="status-message">{status}</p>}
+      {error && <p className="error-message">{error}</p>}
     </section>
   );
 }

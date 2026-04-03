@@ -1,7 +1,5 @@
 import apiClient from "./client";
 
-export const getActiveElection = () => apiClient.get("/voting/elections/active/");
-
 export const getActiveElectionPositions = () => apiClient.get("/voting/elections/active/positions/");
 
 export const getCandidatesByPosition = (positionId) =>
