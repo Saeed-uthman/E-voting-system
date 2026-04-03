@@ -21,6 +21,15 @@ class ElectionSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
+    def validate(self, attrs):
+        starts_at = attrs.get("starts_at")
+        ends_at = attrs.get("ends_at")
+
+        if starts_at and ends_at and ends_at <= starts_at:
+            raise serializers.ValidationError({"ends_at": "End time must be later than start time."})
+
+        return attrs
+
 
 class PositionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -53,10 +62,18 @@ class CandidateSerializer(serializers.ModelSerializer):
 
 
 class VoteSerializer(serializers.ModelSerializer):
+    ERROR_MESSAGES = {
+        "student_ineligible": "Student is not eligible to vote.",
+        "election_inactive": "Election is not active.",
+        "position_mismatch": "Position does not belong to the selected election.",
+        "candidate_mismatch": "Candidate does not belong to the selected position.",
+        "duplicate_vote": "Student has already voted for this position in this election.",
+    }
+
     student = serializers.PrimaryKeyRelatedField(queryset=Student.objects.all())
     election = serializers.PrimaryKeyRelatedField(queryset=Election.objects.all())
     position = serializers.PrimaryKeyRelatedField(queryset=Position.objects.select_related("election"))
-    candidate = serializers.PrimaryKeyRelatedField(queryset=Candidate.objects.select_related("position"))
+    candidate = serializers.PrimaryKeyRelatedField(queryset=Candidate.objects.select_related("position", "position__election"))
 
     class Meta:
         model = Vote
@@ -64,34 +81,31 @@ class VoteSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at"]
 
     def validate(self, attrs):
-        student = attrs["student"]
-        election = attrs["election"]
-        position = attrs["position"]
-        candidate = attrs["candidate"]
+        student = attrs.get("student")
+        election = attrs.get("election")
+        position = attrs.get("position")
+        candidate = attrs.get("candidate")
         now = timezone.now()
 
-        if not student.is_active:
-            raise serializers.ValidationError({"student": "Student is not eligible to vote."})
+        if not student or not student.is_active:
+            raise serializers.ValidationError({"student": self.ERROR_MESSAGES["student_ineligible"]})
 
-        if not election.is_published or not (election.starts_at <= now <= election.ends_at):
-            raise serializers.ValidationError({"election": "Election is not active."})
+        is_active_window = election and election.starts_at <= now <= election.ends_at
+        if not election or not election.is_published or not is_active_window:
+            raise serializers.ValidationError({"election": self.ERROR_MESSAGES["election_inactive"]})
 
-        if position.election_id != election.id:
-            raise serializers.ValidationError({"position": "Position does not belong to the selected election."})
+        if not position or position.election_id != election.id:
+            raise serializers.ValidationError({"position": self.ERROR_MESSAGES["position_mismatch"]})
 
-        if candidate.position_id != position.id:
-            raise serializers.ValidationError({"candidate": "Candidate does not belong to the selected position."})
+        if not candidate or candidate.position_id != position.id:
+            raise serializers.ValidationError({"candidate": self.ERROR_MESSAGES["candidate_mismatch"]})
 
-        already_voted = Vote.objects.filter(
-            student=student,
-            election=election,
-            position=position,
-        )
+        already_voted = Vote.objects.filter(student=student, election=election, position=position)
 
         if self.instance:
             already_voted = already_voted.exclude(pk=self.instance.pk)
 
         if already_voted.exists():
-            raise serializers.ValidationError({"student": "Student has already voted for this position."})
+            raise serializers.ValidationError({"student": self.ERROR_MESSAGES["duplicate_vote"]})
 
         return attrs

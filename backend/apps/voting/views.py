@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.db.models import Count
 from django.utils import timezone
 from rest_framework import status
@@ -130,7 +131,20 @@ class CastVoteView(APIView):
     def post(self, request):
         serializer = VoteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+
+        try:
+            serializer.save()
+        except IntegrityError:
+            return Response(
+                {
+                    "message": "Validation failed.",
+                    "errors": {
+                        "student": [VoteSerializer.ERROR_MESSAGES["duplicate_vote"]],
+                    },
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         return Response({"message": "Vote cast successfully.", "data": serializer.data}, status=status.HTTP_201_CREATED)
 
 
