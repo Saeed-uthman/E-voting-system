@@ -32,6 +32,7 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
 }
 
 .navbar__brand {
@@ -41,7 +42,7 @@ a {
 
 .navbar__links {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
@@ -68,7 +69,8 @@ a {
   margin-bottom: 1rem;
 }
 
-.card h2 {
+.card h2,
+.card h3 {
   margin-top: 0;
 }
 
@@ -89,13 +91,16 @@ input {
   border-radius: 8px;
 }
 
-button {
+button,
+.button-link {
+  display: inline-block;
   border: none;
   border-radius: 8px;
   background: #0f4c81;
-  color: white;
+  color: #fff;
   padding: 0.6rem 0.9rem;
   cursor: pointer;
+  text-align: center;
 }
 
 button:disabled {
@@ -103,9 +108,16 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.actions-row {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
 .helper-text {
   color: #4b5563;
-  margin: 0.5rem 0 0;
+  margin: 0.5rem 0 0.75rem;
 }
 
 .status-message {
@@ -114,4 +126,41 @@ button:disabled {
   border-radius: 8px;
   background: #eef6ff;
   color: #1e3a5f;
+}
+
+.error-message {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.position-card {
+  margin-top: 1rem;
+}
+
+.candidate-list {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.candidate-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+@media (max-width: 640px) {
+  .navbar {
+    padding: 0.75rem 1rem;
+  }
+
+  .page-container {
+    width: 95%;
+  }
 }

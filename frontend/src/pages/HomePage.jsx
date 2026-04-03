@@ -1,11 +1,20 @@
+import { Link } from "react-router-dom";
+
 function HomePage() {
   return (
     <section className="card">
-      <h2>Welcome</h2>
+      <h2>Student Voting Portal</h2>
       <p className="helper-text">
-        This frontend is set up for a clean online voting workflow with React Router navigation and Axios-based
-        communication with the Django API.
+        Verify your student account, view the active election, and submit one vote per position.
       </p>
+      <div className="actions-row">
+        <Link className="button-link" to="/student/login">
+          Student Login
+        </Link>
+        <Link className="button-link" to="/student/vote">
+          Go to Voting Page
+        </Link>
+      </div>
     </section>
   );
 }

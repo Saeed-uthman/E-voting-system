@@ -1,20 +1,26 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { loginStudent, verifyStudent } from "../api/authApi";
+import { useAuth } from "../context/AuthContext";
 
 function StudentLoginPage() {
+  const navigate = useNavigate();
+  const { setStudentAuth } = useAuth();
   const [form, setForm] = useState({ student_id: "", email: "" });
   const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleVerify = async () => {
     setSubmitting(true);
     setStatus("");
+    setError("");
     try {
       await verifyStudent(form);
-      setStatus("Student verification successful.");
-    } catch {
-      setStatus("Student verification failed.");
+      setStatus("Verification successful. You can now login.");
+    } catch (apiError) {
+      setError(apiError.response?.data?.detail || "Student verification failed.");
     } finally {
       setSubmitting(false);
     }
@@ -23,11 +29,15 @@ function StudentLoginPage() {
   const handleLogin = async () => {
     setSubmitting(true);
     setStatus("");
+    setError("");
     try {
-      await loginStudent(form);
+      const response = await loginStudent(form);
+      const payload = response.data?.data;
+      setStudentAuth(payload || null);
       setStatus("Student login successful.");
-    } catch {
-      setStatus("Student login failed.");
+      navigate("/student/vote");
+    } catch (apiError) {
+      setError(apiError.response?.data?.detail || "Student login failed.");
     } finally {
       setSubmitting(false);
     }
@@ -55,15 +65,16 @@ function StudentLoginPage() {
           required
         />
       </div>
-      <div style={{ display: "flex", gap: "0.5rem" }}>
+      <div className="actions-row">
         <button type="button" onClick={handleVerify} disabled={submitting}>
-          Verify
+          {submitting ? "Verifying..." : "Verify"}
         </button>
         <button type="button" onClick={handleLogin} disabled={submitting}>
-          Login
+          {submitting ? "Logging in..." : "Login"}
         </button>
       </div>
       {status && <p className="status-message">{status}</p>}
+      {error && <p className="error-message">{error}</p>}
     </section>
   );
 }

@@ -1,11 +1,11 @@
 import { NavLink } from "react-router-dom";
 
 const links = [
-  { to: "/", label: "Dashboard" },
-  { to: "/election/active", label: "Active Election" },
+  { to: "/", label: "Home" },
   { to: "/student/login", label: "Student Login" },
+  { to: "/student/vote", label: "Vote" },
+  { to: "/election/active", label: "Active Election" },
   { to: "/admin/login", label: "Admin Login" },
-  { to: "/results", label: "Results" },
 ];
 
 function NavBar() {
