@@ -34,16 +34,27 @@ export default function VotingDashboardPage() {
   }
 
   return (
-    <section>
-      <h2>Voting Dashboard</h2>
+    <section className="space-y-5">
+      <div>
+        <h2 className="text-2xl font-bold text-slate-900">Voting Dashboard</h2>
+        <p className="text-sm text-slate-600">{election ? `Active election: ${election.title || 'Current election'}` : 'Loading election details...'}</p>
+      </div>
+
       {positions.map((position) => (
-        <div className="card" key={position.id}>
-          <h3>{position.name}</h3>
-          {position.candidates.map((candidate) => (
-            <button key={candidate.id} disabled={votedPositions.includes(position.id)} onClick={() => castVote(position.id, candidate.id)}>
-              Vote {candidate.full_name}
-            </button>
-          ))}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" key={position.id}>
+          <h3 className="text-lg font-semibold text-slate-900">{position.name}</h3>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {position.candidates.map((candidate) => (
+              <button
+                key={candidate.id}
+                disabled={votedPositions.includes(position.id)}
+                onClick={() => castVote(position.id, candidate.id)}
+                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-medium text-slate-800 transition hover:border-blue-300 hover:bg-blue-50 disabled:cursor-not-allowed disabled:bg-slate-200"
+              >
+                Vote {candidate.full_name}
+              </button>
+            ))}
+          </div>
         </div>
       ))}
     </section>

@@ -3,9 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NUK Voting System</title>
+    <title>NUK Voting</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: '#eff6ff',
+                100: '#dbeafe',
+                600: '#2563eb',
+                700: '#1d4ed8',
+                900: '#1e3a8a',
+              },
+            },
+          },
+        },
+      }
+    </script>
   </head>
-  <body>
+  <body class="bg-slate-50 text-slate-800">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

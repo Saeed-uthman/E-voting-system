@@ -21,9 +21,9 @@ export default function App() {
   }, [])
 
   return (
-    <div>
+    <div className="min-h-screen bg-slate-50">
       <NavBar />
-      <main className="container">
+      <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/student/login" element={<StudentLoginPage />} />
