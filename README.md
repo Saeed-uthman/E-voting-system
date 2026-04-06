@@ -13,6 +13,7 @@ cd backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+python manage.py makemigrations
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
@@ -24,6 +25,11 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## Authentication notes
+- Admin endpoints use JWT tokens from `/api/auth/admin/login/`.
+- Student voting endpoints (`/api/voting/submit/`, `/api/voting/status/`) require the `StudentToken` returned by `/api/auth/students/login/`.
+- Send student auth as `Authorization: StudentToken <token>`.
 
 ## Default API base URL
 `http://127.0.0.1:8000/api/`

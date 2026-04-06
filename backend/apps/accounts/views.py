@@ -1,9 +1,12 @@
 from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import check_password
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from .authentication import StudentSigner
 from .models import Student
 from .serializers import AdminLoginSerializer, StudentSerializer, StudentLoginSerializer
 
@@ -71,12 +74,12 @@ class StudentLoginView(APIView):
     def post(self, request):
         serializer = StudentLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         student = Student.objects.filter(
             reg_no=serializer.validated_data['reg_no'],
-            password=serializer.validated_data['password'],
             is_active=True,
         ).first()
-        if not student:
+        if not student or not check_password(serializer.validated_data['password'], student.password):
             return Response({'detail': 'Invalid student credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         return Response({
@@ -85,4 +88,6 @@ class StudentLoginView(APIView):
             'full_name': student.full_name,
             'department': student.department,
             'level': student.level,
+            'student_token': StudentSigner.issue_token(student),
+            'token_type': 'StudentToken',
         })
