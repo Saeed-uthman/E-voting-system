@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status
+from apps.accounts.permissions import IsAuthenticatedStudent
 from apps.elections.models import Election, Position
 from .models import Vote
 from .serializers import VoteCreateSerializer, BallotPositionSerializer, ActiveElectionSerializer, compute_results
@@ -31,24 +32,23 @@ class BallotView(APIView):
 
 
 class VoteCreateView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedStudent]
 
     def post(self, request):
-        serializer = VoteCreateSerializer(data=request.data)
+        serializer = VoteCreateSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         vote = serializer.save()
         return Response({'id': vote.id, 'detail': 'Vote submitted successfully.'}, status=status.HTTP_201_CREATED)
 
 
 class StudentVoteStatusView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedStudent]
 
     def get(self, request):
-        reg_no = request.query_params.get('reg_no')
         election_id = request.query_params.get('election_id')
-        if not reg_no or not election_id:
-            return Response({'detail': 'reg_no and election_id are required.'}, status=status.HTTP_400_BAD_REQUEST)
-        votes = Vote.objects.filter(student__reg_no=reg_no, election_id=election_id).values('position_id')
+        if not election_id:
+            return Response({'detail': 'election_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        votes = Vote.objects.filter(student=request.student, election_id=election_id).values('position_id')
         return Response({'voted_positions': [row['position_id'] for row in votes]})
 
 

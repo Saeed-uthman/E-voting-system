@@ -1,24 +1,21 @@
 from django.db.models import Count
 from django.utils import timezone
 from rest_framework import serializers
-from apps.accounts.models import Student
 from apps.elections.models import Election, Position, Candidate
 from .models import Vote
 
 
 class VoteCreateSerializer(serializers.ModelSerializer):
-    reg_no = serializers.CharField(write_only=True)
-
     class Meta:
         model = Vote
-        fields = ['id', 'reg_no', 'election', 'position', 'candidate', 'created_at']
+        fields = ['id', 'election', 'position', 'candidate', 'created_at']
         read_only_fields = ['id', 'created_at']
 
     def validate(self, attrs):
-        reg_no = attrs.pop('reg_no')
-        student = Student.objects.filter(reg_no=reg_no, is_active=True).first()
+        request = self.context.get('request')
+        student = getattr(request, 'student', None)
         if not student:
-            raise serializers.ValidationError('Valid active student is required.')
+            raise serializers.ValidationError('Authenticated student is required.')
 
         election = attrs['election']
         position = attrs['position']
